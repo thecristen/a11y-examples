@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+
+  <title>Live log example</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  <style type="text/css">
+    .btn { font-family: inherit; }
+    .btn:hover { cursor: pointer; }
+    .navbar { display: block; }
+    .simulations { display: inline-block; float: right; }
+    .alert {
+      border-width: 3px;
+      font-size: smaller;
+      padding: .5em 1em;
+    }
+  </style>
+
+
+</head>
+  <body>
+    <nav class="navbar navbar-inverse bg-inverse">
+      <h1 id="log-label" class="navbar-brand mb-0">Live Log</h1>
+      <div class="simulations">
+        <button id="simulate-start" class="btn btn-success">Start simulation</button>
+        <button id="simulate-stop" class="btn btn-danger disabled">Stop simulation</button>
+      </div>
+    </nav>
+    <div class="container">
+      <section id="messages" role="log" aria-labelledby="log-label" aria-atomic="true" aria-relevant="all">
+      </section>
+
+      <hr>
+      <footer>
+        <p class="pull-left">
+          <strong>Resources:</strong> <a href="http://examples.simplyaccessible.com/aria/live-regions-log.html">Live Region Example</a>
+        </p>
+
+        <small>Made with &hearts; by @thecristen.</small>
+      </footer>
+
+    </div>
+
+    <script type="text/javascript">
+      var messages = [
+        {"id": "0", "severity": 2, "message": "The medication you are about to administer is contraindicated for this patient."},
+        {"id": "1", "severity": 2, "message": "Possible allergy."},
+        {"id": "2", "severity": 2, "message": "Dangerously low serum potassium."},
+        {"id": "3", "severity": 1, "message": "A possible duplicate for this patient record was found."},
+        {"id": "4", "severity": 1, "message": "Notable increase in heart rate over the past half hour."},
+        {"id": "5", "severity": 0, "message": "This patient is due for a colon cancer screening."},
+        {"id": "6", "severity": 0, "message": "Low-molecular-weight heparin may be a better medication for certain patients."},
+        {"id": "7", "severity": 0, "message": "This patient is due for a flu shot."},
+        {"id": "8", "severity": 0, "message": "New lab results available."},
+        {"id": "9", "severity": 1, "message": "New abnormal test result found."}
+      ];
+
+      var $danger = $("<div class='alert alert-danger' aria-live='assertive'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><span class='messageText'></span></div>");
+      var $warning = $("<div class='alert alert-warning' aria-live='polite'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><span class='messageText'></span></div>");
+      var $info = $("<div class='alert alert-info' aria-live='off'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><span class='messageText'></span></div>");
+
+      var alerts = [$info, $warning, $danger];
+
+      var timerId;
+
+      $("#simulate-start").on("click", alertsStart);
+      $("#simulate-stop").on("click", alertsStop);
+
+      function pushMessage() {
+        // choose one at random
+        var displayedIDs = $("#messages .alert").map(function() { return $(this).attr("data-id"); }).get();
+        var messageBank = messages.filter(function(m) { return displayedIDs.indexOf(m.id) == -1; });
+        var selectedMessage = messageBank[Math.floor(Math.random() * messageBank.length)];
+        var $alert = alerts[selectedMessage.severity].clone().attr("data-id", selectedMessage.id);
+        $alert.find(".messageText").text(selectedMessage.message);
+        $("#messages").append($alert);
+      }
+
+      function alertsStart() {
+        $("#simulate-start").addClass("disabled");
+        $("#simulate-stop").removeClass("disabled");
+        timerId = setInterval(function() { return pushMessage() }, 5000);
+        pushMessage();
+      }
+
+      function alertsStop() {
+        $("#simulate-start").removeClass("disabled");
+        $("#simulate-stop").addClass("disabled");
+        clearInterval(timerId);
+        timerId = null;
+      }
+    </script>
+  </body>
+</html>
